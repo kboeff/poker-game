@@ -81,10 +81,14 @@ print('players:', players)
 players_number = len(players)
 stage = 0
 dealer_indx = 0
-bets_on_table = [0 for indx in range(players_number)]
 common_cards = []
+round_bets = {}
+for player in players:
+    round_bets[player.name] = -1
 
-while stage != -1:
+for stage in range(0, 7):
+    current_bet = 0
+    pot = 0
 
     if stage == 0:
         deck = shuffle_deck(initial_deck)
@@ -98,17 +102,43 @@ while stage != -1:
             # Auto betting blinds
             player_indx = players.index(player)
             if player_indx == (dealer_indx + 1) % players_number:
-                bets_on_table[player_indx] += small_blind
+                round_bets[player.name] += small_blind
                 player.total_cash -= small_blind
+                pot += small_blind
             elif player_indx == (dealer_indx + 2) % players_number:
-                bets_on_table[player_indx] += big_blind
+                round_bets[player.name] += big_blind
                 player.total_cash -= big_blind
+                current_max_bet = big_blind
+                pot += big_blind
         
         common_cards = deck[:3]
         deck = deck[3:]
     
-        print('Players', players)
-        print('bets:', bets_on_table)
+        print('bets:', round_bets)
         print('common cards', common_cards)
         print('deck', deck)
-        stage = -1
+
+    elif stage in [2, 4, 6]:
+        # Dealing common cards
+        common_cards.append(deck[0]) 
+        deck = deck[1:]
+
+        print('stage', stage)
+        print('cards on table', common_cards)
+
+    elif stage % 2 != 0:
+        if stage != 1:
+            current_max_bet = 0 
+        # Betting time
+        for player in players:
+            bet = round_bets[player.name]
+            call_bet = bet < current_max_bet # expand of move to if condition below
+            print(f'{player.name}\'s turn')
+            if call_bet:
+                print('[F]old / [C]all / [R]aise')
+            else:
+                print('[F]old / [C]heck / [B]et')
+            
+
+        
+
