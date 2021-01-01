@@ -84,7 +84,7 @@ dealer_indx = 0
 common_cards = []
 round_bets = {}
 for player in players:
-    round_bets[player.name] = -1
+    round_bets[player.name] = 0
 
 for stage in range(0, 7):
     current_bet = 0
@@ -102,11 +102,11 @@ for stage in range(0, 7):
             # Auto betting blinds
             player_indx = players.index(player)
             if player_indx == (dealer_indx + 1) % players_number:
-                round_bets[player.name] += small_blind
+                round_bets[player.name] = small_blind
                 player.total_cash -= small_blind
                 pot += small_blind
             elif player_indx == (dealer_indx + 2) % players_number:
-                round_bets[player.name] += big_blind
+                round_bets[player.name] = big_blind
                 player.total_cash -= big_blind
                 current_max_bet = big_blind
                 pot += big_blind
@@ -131,13 +131,39 @@ for stage in range(0, 7):
             current_max_bet = 0 
         # Betting time
         for player in players:
-            bet = round_bets[player.name]
+            name = player.name
+            bet = round_bets[name]
             call_bet = bet < current_max_bet # expand of move to if condition below
-            print(f'{player.name}\'s turn')
+            sum_to_call = current_max_bet - bet
+            print(f'{name}\'s turn')
             if call_bet:
                 print('[F]old / [C]all / [R]aise')
             else:
                 print('[F]old / [C]heck / [B]et')
+            
+            action = input()
+            while action.upper() not in ['F', 'C', 'R']:
+                action = input()
+            if action.upper() == 'F':
+                round_bets[name] = -1
+            elif action.upper() == 'C':
+                if call_bet:
+                    player.total_cash -= sum_to_call
+                    round_bets[name] = current_max_bet
+                    pot += sum_to_call
+                else:
+                    pass
+            elif action.upper() in ['R', 'B']:
+                print(f'Enter bet (0 - {player.total_cash}): ')
+                raising_with = int(input())
+                while raising_with <= 0 or raising_with > player.total_cash:
+                    print('Invalid bet, try again.')
+                    raising_with = int(input())
+                player.total_cash -= raising_with
+                round_bets[name] += raising_with
+                pot += raising_with
+            
+                    
             
 
         
