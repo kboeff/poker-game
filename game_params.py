@@ -1,6 +1,6 @@
 # Defining input constants
 card_values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
-card_colors = ['S', 'H', 'D', 'C']
+card_colors = ['C', 'D', 'H', 'S']
 poker_scores = {
     'high_card': 1,
     'pair': 2,

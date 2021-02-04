@@ -1,5 +1,5 @@
-import random
-from game_params import card_values, card_colors
+from player import Player
+from deck import Deck
 
 test_players = [
     ('boba', 1000),
@@ -14,48 +14,9 @@ test_players = [
 small_blind = 5
 big_blind = 10
 
-# Card class
-class Card:
-    def __init__(self, value, color):
-        self.value = value
-        self.color = color
-    
-    def __repr__(self):
-        return str(self)
-
-    def __str__(self):
-        return f'{self.value}{self.color}'
-
-
-# Player class
-class Player:
-    def __init__(self, name, total_cash):
-        self.total_cash = total_cash
-        self.name = name
-
-    def __repr__(self):
-        return str(self)
-    
-    def __str__(self):
-        return f'{self.name} ${self.total_cash}'
-
 # Init deck 
-def build_deck(card_values, card_colors):
-    deck = []
-    for value in card_values:
-        for color in card_colors:
-            card = Card(value, color)
-            deck.append(card)
-    return deck
-
-initial_deck = build_deck(card_values, card_colors)
-print('Initial deck:', initial_deck)
-
-# Shuffle deck
-def shuffle_deck(deck):
-    shuffled = deck
-    random.shuffle(shuffled)
-    return shuffled
+deck = Deck()
+print('Initial deck:', deck)
 
 # Init players
 def make_player(name_cash):
@@ -67,7 +28,7 @@ print('players:', players)
 def game():
     players_number = len(players)
     end_round = False
-    dealer_indx = 0
+    dealer_index = 0
     common_cards = []
     round_bets = {}
     current_max_bet = 0
@@ -79,48 +40,45 @@ def game():
 
     clear_bets()
 
-    for stage in range(0, 8):
+    for stage in range(0, 6):
         if end_round:
             break
 
         if stage == 0:
-            deck = shuffle_deck(initial_deck)
-            print('start deck', deck)
+            deck.shuffle()
+            print('start/shuffled/ deck', deck)
 
             for player in players:
                 # Dealing players
-                player.hand = deck[:2] # MAYBE keep hands in separate var?
-                deck = deck[2:]
+                player.hand = deck.deal(2)
                 print(f'{player.name} - {player.hand}')
 
                 # Auto betting blinds
                 player_indx = players.index(player)
-                if player_indx == (dealer_indx + 1) % players_number:
+                if player_indx == (dealer_index + 1) % players_number:
                     round_bets[player.name] = small_blind
                     player.total_cash -= small_blind
                     pot += small_blind
-                elif player_indx == (dealer_indx + 2) % players_number:
+                elif player_indx == (dealer_index + 2) % players_number:
                     round_bets[player.name] = big_blind
                     player.total_cash -= big_blind
                     current_max_bet = big_blind
                     pot += big_blind
             
-            common_cards = deck[:3]
-            deck = deck[3:]
+            common_cards = deck.deal(3)
         
             print('bets:', round_bets)
             print('pot:', pot)
             print('common cards', common_cards)
             print('deck', deck)
 
-        elif stage in [2, 4, 6]:
+        elif stage in [2, 4]:
             for player in players:
                 if round_bets[player.name] != -1:
                     round_bets[player.name] = 0
 
             # Dealing common cards
-            common_cards.append(deck[0]) 
-            deck = deck[1:]
+            common_cards += deck.deal(1)
 
             print('stage', stage)
             print('cards on table', common_cards)
@@ -196,8 +154,5 @@ def game():
                     settled = True
                 print('active_bets', active_bets)
                 print('unique_bets', unique_bets)
-
-
-# Test betting / raising more - see if biggest bet in a round is transferred in the next and that player shouldn't Call/Check it
 
 game()
